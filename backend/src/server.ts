@@ -42,7 +42,7 @@ app.use('/admin/queues', requireQueueAdmin, serverAdapter.getRouter());
 const frontendDist = fileURLToPath(new URL('../../frontend/dist', import.meta.url));
 if (existsSync(frontendDist)) {
   app.use(express.static(frontendDist));
-  app.get('*', (req, res, next) => {
+  app.get('/*splat', (req, res, next) => {
     if (req.path.startsWith('/api') || req.path.startsWith('/admin')) return next();
     res.sendFile(path.join(frontendDist, 'index.html'));
   });
