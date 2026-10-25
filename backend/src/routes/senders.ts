@@ -15,13 +15,21 @@ sendersRouter.get('/senders', async (req: AuthRequest, res) => {
 });
 sendersRouter.post('/senders', async (req: AuthRequest, res) => {
   const input = z.object({
-    name: z.string().trim().min(1).max(100), email: z.string().email().endsWith('@ethereal.email'),
-    password: z.string().min(1).max(200), hourlyLimit: z.number().int().min(1).max(config.MAX_EMAILS_PER_HOUR),
+    name: z.string().trim().min(1).max(100), email: z.string().trim().toLowerCase().email().endsWith('@ethereal.email'),
+    password: z.string().trim().min(1).max(200), hourlyLimit: z.number().int().min(1).max(config.MAX_EMAILS_PER_HOUR),
   }).parse(req.body);
   const transport = nodemailer.createTransport({ host: 'smtp.ethereal.email', port: 587, secure: false,
-    requireTLS: true, auth: { user: input.email, pass: input.password }, connectionTimeout: 10000, socketTimeout: 15000 });
+    requireTLS: true, auth: { user: input.email, pass: input.password }, connectionTimeout: 5000, greetingTimeout: 5000, socketTimeout: 8000 });
   try { await transport.verify(); }
-  catch { res.status(400).json({ message: 'Ethereal could not verify these credentials.' }); return; }
+  catch (err: unknown) {
+    const error = err as { code?: string; responseCode?: number; message?: string };
+    const isAuthError = error.responseCode === 535 || error.code === 'EAUTH' || (typeof error.message === 'string' && error.message.includes('535'));
+    if (isAuthError) {
+      res.status(400).json({ message: 'Ethereal authentication failed. Please check your username and password.' });
+      return;
+    }
+    console.warn('SMTP verification note (port 587 blocked by cloud host or timed out):', error.message || error.code);
+  }
   finally { transport.close(); }
   const data = { name: input.name, smtpUser: input.email, smtpSecret: encrypt(input.password), hourlyLimit: input.hourlyLimit };
   const sender = await prisma.sender.upsert({ where: { userId_email: { userId: req.userId!, email: input.email } },

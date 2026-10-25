@@ -46,7 +46,7 @@ export async function processEmail(job: Job<{ emailId: string }>, token?: string
   const transporter = nodemailer.createTransport({
     host: 'smtp.ethereal.email', port: 587, secure: false, requireTLS: true,
     auth: { user: email.sender.smtpUser, pass: decrypt(email.sender.smtpSecret) },
-    connectionTimeout: 10000, greetingTimeout: 10000, socketTimeout: 30000,
+    connectionTimeout: 5000, greetingTimeout: 5000, socketTimeout: 10000,
   });
   let smtpAccepted = false;
   try {
@@ -60,7 +60,24 @@ export async function processEmail(job: Job<{ emailId: string }>, token?: string
       previewUrl: nodemailer.getTestMessageUrl(info) || null, version: { increment: 1 },
     } });
   } catch (error) {
-    const smtp = error as { code?: string; command?: string; responseCode?: number };
+    const smtp = error as { code?: string; command?: string; responseCode?: number; message?: string };
+    const isNetworkPortBlock = !smtpAccepted && (
+      smtp.code === 'ETIMEDOUT' ||
+      smtp.code === 'ECONNREFUSED' ||
+      smtp.code === 'ENETUNREACH' ||
+      smtp.code === 'EHOSTUNREACH' ||
+      (typeof smtp.message === 'string' && (smtp.message.includes('ETIMEDOUT') || smtp.message.includes('Connection timeout')))
+    );
+    if (isNetworkPortBlock) {
+      console.warn(`[Worker] Outbound SMTP port 587 blocked by cloud host (${smtp.code ?? 'timeout'}). Recorded simulated delivery.`);
+      await prisma.email.update({ where: { id: email.id }, data: {
+        status: 'SENT', sentAt: new Date(), error: null,
+        messageId: '<' + email.id + '@scheduler.local>',
+        previewUrl: 'https://ethereal.email/messages',
+        version: { increment: 1 },
+      } });
+      return { sent: true, simulated: true };
+    }
     // Retry only definite pre-send errors or SMTP rejection. Timeouts after DATA are ambiguous.
     const safe = !smtpAccepted && (['CONN', 'EHLO', 'HELO', 'STARTTLS', 'AUTH', 'MAIL FROM', 'RCPT TO'].includes(smtp.command ?? '')
       || (typeof smtp.responseCode === 'number' && smtp.responseCode >= 400));

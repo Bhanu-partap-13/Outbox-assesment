@@ -14,7 +14,10 @@ export default function SenderDialog({ maxLimit, onClose, onSaved }: {
     setBusy(true); setError('');
     try {
       const sender = await api<Sender>('/senders', { method: 'POST', body: JSON.stringify({
-        name: form.get('name'), email: form.get('email'), password: form.get('password'), hourlyLimit: Number(form.get('hourlyLimit')),
+        name: String(form.get('name') ?? '').trim(),
+        email: String(form.get('email') ?? '').trim(),
+        password: String(form.get('password') ?? '').trim(),
+        hourlyLimit: Number(form.get('hourlyLimit')),
       }) });
       onSaved(sender);
     } catch (e) { setError((e as Error).message); }
