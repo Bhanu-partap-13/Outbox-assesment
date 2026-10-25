@@ -7,8 +7,8 @@ loadEnv({ path: fileURLToPath(new URL('../../.env', import.meta.url)) });
 const env = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(4000),
-  FRONTEND_URL: z.string().url().default('http://localhost:5173'),
-  API_URL: z.string().url().default('http://localhost:5173'),
+  FRONTEND_URL: z.string().url().default(process.env.RENDER_EXTERNAL_URL || 'http://localhost:5173'),
+  API_URL: z.string().url().default(process.env.RENDER_EXTERNAL_URL || 'http://localhost:5173'),
   JWT_SECRET: z.string().min(16).default('874c5b0a9628dd401c8ec747cb8e56078e513c1e5f2730cbf5e9d1f7ee8d0496'),
   ENCRYPTION_KEY: z.string().default('76ae1d36f545087b341dbc5ecadbca0a6470689d74980999d7b1aec0526f42cf').transform(key => {
     if (/^[a-f\d]{64}$/i.test(key)) return key;
