@@ -6,22 +6,23 @@ A distributed, production-grade email scheduling system and analytics dashboard 
 
 ---
 
-## 📑 Table of Contents
-1. [Key Features](#-key-features)
-2. [Architecture & Data Flow](#️-architecture--data-flow)
-3. [Tech Stack](#️-tech-stack)
-4. [Prerequisites](#-prerequisites)
-5. [Step-by-Step Installation & Setup](#-step-by-step-installation--setup)
+## Table of Contents
+1. [Key Features](#key-features)
+2. [Architecture & Data Flow](#architecture--data-flow)
+3. [Tech Stack](#tech-stack)
+4. [Prerequisites](#prerequisites)
+5. [Step-by-Step Installation & Setup](#step-by-step-installation--setup)
    - [Step 1: Clone & Install Dependencies](#step-1-clone--install-dependencies)
    - [Step 2: Environment Configuration](#step-2-environment-configuration)
    - [Step 3: Google OAuth Configuration](#step-3-google-oauth-configuration)
    - [Step 4: Slack OAuth & Webhook Alerts Configuration](#step-4-slack-oauth--webhook-alerts-configuration)
    - [Step 5: Launch Infrastructure with Docker](#step-5-launch-infrastructure-with-docker)
    - [Step 6: Database Initialization & Migrations](#step-6-database-initialization--migrations)
-6. [Running the Application](#-running-the-application)
+6. [Running the Application](#running-the-application)
    - [Option A: One-Command All-in-One Runner](#option-a-one-command-all-in-one-runner-recommended)
    - [Option B: Separate Terminals for Debugging](#option-b-separate-terminals-for-debugging)
-7. [Step-by-Step Demo & Verification Walkthrough](#-step-by-step-demo--verification-walkthrough)
+7. [Application Access Endpoints](#application-access-endpoints)
+8. [Step-by-Step Demo & Verification Walkthrough](#step-by-step-demo--verification-walkthrough)
    - [1. User Authentication](#1-user-authentication)
    - [2. Add Ethereal SMTP Senders](#2-add-ethereal-smtp-senders)
    - [3. Connect Slack for Rate Alerts](#3-connect-slack-for-rate-alerts)
@@ -29,15 +30,16 @@ A distributed, production-grade email scheduling system and analytics dashboard 
    - [5. Test Rate Limiting & Live Slack Notification](#5-test-rate-limiting--live-slack-notification)
    - [6. Test Server Restart Persistence](#6-test-server-restart-persistence)
    - [7. Fast Search & Email Previews](#7-fast-search--email-previews)
-8. [Monitoring & Queues Dashboard (Bull Board)](#-monitoring--queues-dashboard-bull-board)
-9. [Automated Testing & Builds](#-automated-testing--builds)
-10. [REST API Documentation](#-rest-api-documentation)
-11. [Troubleshooting & Common Questions](#-troubleshooting--common-questions)
-12. [Project Structure](#-project-structure)
+9. [Monitoring & Queues Dashboard (Bull Board)](#monitoring--queues-dashboard-bull-board)
+10. [Automated Testing & Builds](#automated-testing--builds)
+11. [REST API Documentation](#rest-api-documentation)
+12. [Troubleshooting & Common Questions](#troubleshooting--common-questions)
+13. [Project Structure](#project-structure)
+14. [Submission & Evaluation](#submission--evaluation)
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
 - **Distributed Queueing & Outbox Pattern**: Implements a transactional outbox in PostgreSQL paired with BullMQ delayed jobs to guarantee persistence and prevent duplicate sends across restarts.
 - **Intelligent Dynamic Rate Limiting**: Redis Lua scripts atomically enforce per-sender hourly limits, global send delays, and campaign quotas using Redis server time to prevent clock drift issues.
@@ -46,11 +48,11 @@ A distributed, production-grade email scheduling system and analytics dashboard 
 - **Fast Full-Text Search**: Scheduled and sent emails are indexed in **Elasticsearch 8** with versioned document synchronizers for instant status filtering, recipient search, and pagination.
 - **Google OAuth 2.0 Authentication**: Authorization Code flow with PKCE, audience-verified ID tokens, and secure HTTP-only SameSite session cookies.
 - **Modern Responsive Dashboard**: React 19 dashboard styled with Tailwind CSS, featuring a CSV/text lead upload parser with chip deduplication, real-time message previews, and modal composers.
-- **Queue Observability**: Integrated [Bull Board](http://localhost:5173/admin/queues) administrative dashboard for real-time visibility into active, delayed, and completed email jobs.
+- **Queue Observability**: Integrated Bull Board administrative dashboard for real-time visibility into active, delayed, and completed email jobs.
 
 ---
 
-## 🏗️ Architecture & Data Flow
+## Architecture & Data Flow
 
 ```mermaid
 flowchart TD
@@ -91,7 +93,7 @@ flowchart TD
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Domain | Technologies |
 | :--- | :--- |
@@ -106,7 +108,7 @@ flowchart TD
 
 ---
 
-## 📋 Prerequisites
+## Prerequisites
 
 Before running the application, ensure you have the following installed on your machine:
 - **Node.js**: v22+ (verified with Node 22 and 24)
@@ -116,15 +118,15 @@ Before running the application, ensure you have the following installed on your 
 
 ---
 
-## ⚡ Step-by-Step Installation & Setup
+## Step-by-Step Installation & Setup
 
 ### Step 1: Clone & Install Dependencies
 Clone the repository and install all workspace dependencies from the root directory:
 
 ```bash
 # Clone the repository
-git clone https://github.com/Bhanu-partap-13/emailScheduler.git
-cd emailScheduler
+git clone https://github.com/Bhanu-partap-13/Outbox-assesment.git
+cd Outbox-assesment
 
 # Install dependencies across all workspaces (root, backend, and frontend)
 npm install
@@ -155,12 +157,12 @@ Open `.env` and fill in the required variables:
 ### Step 3: Google OAuth Configuration
 1. Open the [Google Cloud Console](https://console.cloud.google.com/).
 2. Create a new project (e.g. `ReachInbox Scheduler`).
-3. Under **APIs & Services** → **OAuth consent screen**:
+3. Under **APIs & Services** -> **OAuth consent screen**:
    - Choose **External** user type.
    - Fill in the App Name and user support email.
    - Add your email under **Test users**.
-4. Under **APIs & Services** → **Credentials**:
-   - Click **Create Credentials** → **OAuth client ID**.
+4. Under **APIs & Services** -> **Credentials**:
+   - Click **Create Credentials** -> **OAuth client ID**.
    - Select Application type: **Web application**.
    - Add Authorized redirect URI:
      ```text
@@ -177,13 +179,13 @@ Open `.env` and fill in the required variables:
 ### Step 4: Slack OAuth & Webhook Alerts Configuration
 1. Open the [Slack API Portal](https://api.slack.com/apps) and click **Create New App** (From scratch).
 2. Choose a workspace where you want rate limit notifications delivered.
-3. Under **Features** → **OAuth & Permissions**:
+3. Under **Features** -> **OAuth & Permissions**:
    - Add Redirect URL:
      ```text
      http://localhost:5173/api/integrations/slack/callback
      ```
-   - Under **Scopes** → **Bot Token Scopes**, add `incoming-webhook`.
-4. Under **Settings** → **Basic Information**, copy the **Client ID** and **Client Secret** to your `.env`:
+   - Under **Scopes** -> **Bot Token Scopes**, add `incoming-webhook`.
+4. Under **Settings** -> **Basic Information**, copy the **Client ID** and **Client Secret** to your `.env`:
    ```env
    SLACK_CLIENT_ID=your_slack_client_id_here
    SLACK_CLIENT_SECRET=your_slack_client_secret_here
@@ -222,7 +224,7 @@ npm run db:migrate
 
 ---
 
-## 🏃 Running the Application
+## Running the Application
 
 ### Option A: One-Command All-in-One Runner (Recommended)
 You can run all three processes (Backend API, BullMQ Worker, and Vite Frontend) simultaneously using:
@@ -232,33 +234,33 @@ npm run dev
 ```
 
 This starts:
-- 🚀 **Backend API**: Running on `http://localhost:4000`
-- ⚙️ **BullMQ Queue Worker**: Concurrently processing email jobs and rate limits
-- 💻 **Frontend Web App**: Running on `http://localhost:5173`
+- **Backend API**: Running on `http://localhost:4000`
+- **BullMQ Queue Worker**: Concurrently processing email jobs and rate limits
+- **Frontend Web App**: Running on `http://localhost:5173`
 
 ---
 
 ### Option B: Separate Terminals for Debugging
 If you prefer viewing separate logs for each process, open three terminal tabs:
 
-**Terminal 1 — Backend API Server:**
+**Terminal 1 - Backend API Server:**
 ```bash
 npm run dev --workspace backend
 ```
 
-**Terminal 2 — BullMQ Queue Worker:**
+**Terminal 2 - BullMQ Queue Worker:**
 ```bash
 npm run worker --workspace backend
 ```
 
-**Terminal 3 — Frontend React Application:**
+**Terminal 3 - Frontend React Application:**
 ```bash
 npm run dev --workspace frontend
 ```
 
 ---
 
-## 🌐 Application Access Endpoints
+## Application Access Endpoints
 
 | Service | Address | Description |
 | :--- | :--- | :--- |
@@ -269,7 +271,7 @@ npm run dev --workspace frontend
 
 ---
 
-## 🎯 Step-by-Step Demo & Verification Walkthrough
+## Step-by-Step Demo & Verification Walkthrough
 
 Follow this 5-minute flow to verify all project requirements:
 
@@ -280,7 +282,7 @@ Follow this 5-minute flow to verify all project requirements:
 
 ### 2. Add Ethereal SMTP Senders
 1. Open [Ethereal Email](https://ethereal.email/create) in a new tab to create two free test SMTP accounts.
-2. In the dashboard header, click **Compose** ➔ **Add Sender**.
+2. In the dashboard header, click **Compose** -> **Add Sender**.
 3. Enter:
    - **Sender Name**: e.g., `Primary Outreach`
    - **Ethereal Email Address**
@@ -329,15 +331,15 @@ Follow this 5-minute flow to verify all project requirements:
 
 ### 7. Fast Search & Email Previews
 1. Go to the **Sent** view in the inbox table.
-2. Type a subject keyword in the search bar — search queries run against **Elasticsearch 8** with sub-50ms latency.
+2. Type a subject keyword in the search bar - search queries run against **Elasticsearch 8** with sub-50ms latency.
 3. Click on any sent email to open the details modal and click the **Ethereal Preview Link** to view the real rendered email in Ethereal.
 
 ---
 
-## 📊 Monitoring & Queues Dashboard (Bull Board)
+## Monitoring & Queues Dashboard (Bull Board)
 
 The application includes an integrated Bull Board monitoring dashboard at:
-👉 **[http://localhost:5173/admin/queues](http://localhost:5173/admin/queues)**
+[http://localhost:5173/admin/queues](http://localhost:5173/admin/queues)
 
 - Authenticate using the `QUEUE_ADMIN_USER` and `QUEUE_ADMIN_PASSWORD` defined in your `.env`.
 - Inspect real-time job states: `Waiting`, `Active`, `Delayed`, `Completed`, and `Failed`.
@@ -345,7 +347,7 @@ The application includes an integrated Bull Board monitoring dashboard at:
 
 ---
 
-## 🧪 Automated Testing & Builds
+## Automated Testing & Builds
 
 Run test suites and builds to ensure zero regressions:
 
@@ -362,7 +364,7 @@ npm run build
 
 ---
 
-## 🔌 REST API Documentation
+## REST API Documentation
 
 ### Schedule Email Batch
 `POST /api/emails/schedule`
@@ -385,16 +387,16 @@ npm run build
 ```
 
 ### Senders
-- `GET /api/senders` — List configured senders and hourly usage.
-- `POST /api/senders` — Add and verify a new Ethereal SMTP sender.
+- `GET /api/senders` - List configured senders and hourly usage.
+- `POST /api/senders` - Add and verify a new Ethereal SMTP sender.
 
 ### Emails & Search
-- `GET /api/emails?status=SCHEDULED&page=1&limit=25` — List scheduled emails.
-- `GET /api/emails?status=SENT&query=Quarterly` — Search sent emails via Elasticsearch.
+- `GET /api/emails?status=SCHEDULED&page=1&limit=25` - List scheduled emails.
+- `GET /api/emails?status=SENT&query=Quarterly` - Search sent emails via Elasticsearch.
 
 ---
 
-## ❓ Troubleshooting & Common Questions
+## Troubleshooting & Common Questions
 
 #### 1. Docker Desktop daemon error
 *Error*: `failed to connect to the docker API at npipe://...`  
@@ -414,7 +416,7 @@ Quotas are calculated on fixed **UTC clock hours** (`YYYY-MM-DD-HH`). If an acco
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 ├── backend/
@@ -446,7 +448,7 @@ Quotas are calculated on fixed **UTC clock hours** (`YYYY-MM-DD-HH`). If an acco
 
 ---
 
-## 📄 Submission & Evaluation
-- **Repository**: [https://github.com/Bhanu-partap-13/emailScheduler](https://github.com/Bhanu-partap-13/emailScheduler)
+## Submission & Evaluation
+- **Repository**: [https://github.com/Bhanu-partap-13/Outbox-assesment](https://github.com/Bhanu-partap-13/Outbox-assesment)
 - **Author**: Bhanu Partap (`Bhanu-partap-13`)
 - **Reviewers**: Mitrajit, Yadav036
