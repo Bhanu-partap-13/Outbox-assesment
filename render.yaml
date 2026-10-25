@@ -3,8 +3,8 @@ services:
     name: outbox-labs
     runtime: node
     plan: free
-    buildCommand: npm install && npm run db:generate && npm run build
-    startCommand: npm run db:migrate && npm run start --workspace backend
+    buildCommand: npm install --include=dev && npm run db:generate && npm run build
+    startCommand: npm run db:push && npm run start --workspace backend
     envVars:
       - key: NODE_ENV
         value: production
