@@ -1,5 +1,5 @@
 {
-  "name": "reachinbox-email-scheduler",
+  "name": "outbox-labs-email-scheduler",
   "private": true,
   "workspaces": [
     "backend",

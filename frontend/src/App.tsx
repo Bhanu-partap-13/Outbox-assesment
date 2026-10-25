@@ -41,7 +41,7 @@ export function Workspace({ user, onLogout }: { user: User; onLogout: () => void
   }} />;
   return <div className="workspace">
     <aside className={'sidebar ' + (menu ? 'sidebar-open' : '')}>
-      <div className="wordmark" aria-label="ReachInbox">ONEBOX</div>
+      <div className="wordmark" aria-label="Outbox Labs">OUTBOX LABS</div>
       <div className="sidebar-account"><Avatar user={user} /><div><strong>{user.name}</strong><span>{user.email}</span></div><ChevronDown size={13} /></div>
       <button className="compose-button" onClick={() => setCompose(true)}><Plus size={15} />Compose New Email</button>
       <div className="nav-caption">MAIL</div>

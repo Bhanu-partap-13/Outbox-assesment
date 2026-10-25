@@ -1,8 +1,8 @@
-# ReachInbox - High-Throughput Email Scheduler & Outbox Engine
+# Outbox Labs - High-Throughput Email Scheduler & Outbox Engine
 
 A distributed, production-grade email scheduling system and analytics dashboard built with **TypeScript**, **Node.js/Express**, **PostgreSQL (Prisma)**, **Redis (BullMQ)**, **Elasticsearch**, and **React 19 (Tailwind CSS)**.
 
-![ReachInbox Email Scheduler](docs/reference.png)
+![Outbox Labs Email Scheduler](docs/reference.png)
 
 ---
 

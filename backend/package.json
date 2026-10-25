@@ -1,5 +1,5 @@
 {
-  "name": "reachinbox-scheduler-backend",
+  "name": "outbox-labs-scheduler-backend",
   "private": true,
   "type": "module",
   "scripts": {

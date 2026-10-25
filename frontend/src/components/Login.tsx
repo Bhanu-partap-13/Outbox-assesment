@@ -16,9 +16,10 @@ export default function Login() {
   }, []);
   return <main className="login-page">
     <section className="login-card">
+      <div className="wordmark" style={{ margin: '0 0 16px', fontSize: '26px' }}>OUTBOX LABS</div>
       <h1>Login</h1>
       <a className="google-button" href="/api/auth/google"><LogIn size={16} />Login with Google</a>
-      <p className="login-caption">Sign in to your email workspace</p>
+      <p className="login-caption">Sign in to your Outbox Labs workspace</p>
       {error && <Alert>{error}</Alert>}
       {configured === false && !error && <p className="setup-note">Google sign-in setup is pending.</p>}
     </section>
