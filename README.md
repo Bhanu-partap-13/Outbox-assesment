@@ -1,5 +1,5 @@
 # Outbox Labs - High-Throughput Email Scheduler & Outbox Engine
-
+Live link: https://outbox-assesment-x05k.onrender.com/
 A production-grade, distributed email scheduling platform and analytics dashboard built with **TypeScript**, **Node.js/Express 5**, **PostgreSQL (Prisma ORM)**, **Redis (BullMQ)**, **Elasticsearch 8**, and **React 19 (Tailwind CSS)**.
 
 ![Outbox Labs Email Scheduler](docs/reference.png)
