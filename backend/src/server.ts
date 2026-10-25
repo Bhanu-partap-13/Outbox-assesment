@@ -10,6 +10,9 @@ import { prisma } from './db.js';
 import { config } from './config.js';
 import { checkOrigin, requireQueueAdmin } from './auth.js';
 import { emailQueue, redis } from './queue.js';
+import path from 'node:path';
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { oauthRouter } from './routes/oauth.js';
 import { emailsRouter } from './routes/emails.js';
 import { sendersRouter } from './routes/senders.js';
@@ -35,6 +38,15 @@ const serverAdapter = new ExpressAdapter();
 serverAdapter.setBasePath('/admin/queues');
 createBullBoard({ queues: [new BullMQAdapter(emailQueue)], serverAdapter });
 app.use('/admin/queues', requireQueueAdmin, serverAdapter.getRouter());
+
+const frontendDist = fileURLToPath(new URL('../../frontend/dist', import.meta.url));
+if (existsSync(frontendDist)) {
+  app.use(express.static(frontendDist));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api') || req.path.startsWith('/admin')) return next();
+    res.sendFile(path.join(frontendDist, 'index.html'));
+  });
+}
 app.use(((error, _req, res, _next) => {
   if (error instanceof z.ZodError) {
     res.status(400).json({ message: 'Please check the form fields.', issues: error.issues.map(({ path, message }) => ({ path, message })) }); return;
