@@ -16,7 +16,8 @@ import { fileURLToPath } from 'node:url';
 import { oauthRouter } from './routes/oauth.js';
 import { emailsRouter } from './routes/emails.js';
 import { sendersRouter } from './routes/senders.js';
-import { startRelay } from './relay.js';
+import { recoverQueue, startRelay } from './relay.js';
+import { startEmailWorker } from './worker.js';
 import { searchClient } from './search.js';
 
 export const app = express();
@@ -59,10 +60,21 @@ app.use(((error, _req, res, _next) => {
 async function main() {
   await prisma.$connect();
   const stopRelay = startRelay();
+  let worker: ReturnType<typeof startEmailWorker> | null = null;
+  if (process.env.RUN_WORKER !== 'false') {
+    try {
+      await recoverQueue();
+      worker = startEmailWorker();
+      console.log('Worker ready; concurrency=' + config.WORKER_CONCURRENCY);
+    } catch {
+      console.warn('Worker initialization waiting for Redis.');
+    }
+  }
   const server = app.listen(config.PORT, () => console.log('API listening on port ' + config.PORT));
   let closing = false;
   const close = async () => {
     if (closing) return; closing = true;
+    if (worker) await worker.close();
     await new Promise<void>(resolve => server.close(() => resolve()));
     await stopRelay(); await emailQueue.close(); await redis.quit(); await prisma.$disconnect();
   };

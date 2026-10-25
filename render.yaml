@@ -2,7 +2,7 @@ services:
   - type: web
     name: outbox-labs
     runtime: node
-    plan: starter
+    plan: free
     buildCommand: npm install && npm run db:generate && npm run build
     startCommand: npm run db:migrate && npm run start --workspace backend
     envVars:
@@ -15,25 +15,13 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: ENCRYPTION_KEY
-        generateValue: true
+        value: 76ae1d36f545087b341dbc5ecadbca0a6470689d74980999d7b1aec0526f42cf
       - key: QUEUE_ADMIN_USER
         value: admin
       - key: QUEUE_ADMIN_PASSWORD
         generateValue: true
-
-  - type: worker
-    name: outbox-labs-worker
-    runtime: node
-    plan: starter
-    buildCommand: npm install && npm run db:generate && npm run build --workspace backend
-    startCommand: npm run worker --workspace backend
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: DATABASE_URL
-        fromDatabase:
-          name: outbox-labs-db
-          property: connectionString
+      - key: RUN_WORKER
+        value: "true"
 
 databases:
   - name: outbox-labs-db

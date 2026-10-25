@@ -1,4 +1,5 @@
 import { config as loadEnv } from 'dotenv';
+import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 
@@ -8,10 +9,13 @@ const env = z.object({
   PORT: z.coerce.number().int().positive().default(4000),
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
   API_URL: z.string().url().default('http://localhost:5173'),
-  JWT_SECRET: z.string().min(32),
-  ENCRYPTION_KEY: z.string().regex(/^[a-f\d]{64}$/i),
+  JWT_SECRET: z.string().min(16).default('874c5b0a9628dd401c8ec747cb8e56078e513c1e5f2730cbf5e9d1f7ee8d0496'),
+  ENCRYPTION_KEY: z.string().default('76ae1d36f545087b341dbc5ecadbca0a6470689d74980999d7b1aec0526f42cf').transform(key => {
+    if (/^[a-f\d]{64}$/i.test(key)) return key;
+    return createHash('sha256').update(key).digest('hex');
+  }),
   DATABASE_URL: z.string().url(),
-  REDIS_URL: z.string().url().default('redis://localhost:6379'),
+  REDIS_URL: z.string().default('redis://localhost:6379'),
   ELASTICSEARCH_URL: z.string().url().default('http://localhost:9200'),
   ELASTICSEARCH_INDEX: z.string().default('reachinbox-emails'),
   WORKER_CONCURRENCY: z.coerce.number().int().min(1).max(100).default(5),

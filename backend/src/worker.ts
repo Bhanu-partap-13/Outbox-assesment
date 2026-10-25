@@ -78,16 +78,21 @@ export async function processEmail(job: Job<{ emailId: string }>, token?: string
   return { sent: true };
 }
 
-async function main() {
-  await prisma.$connect();
-  await redis.ping();
-  await recoverQueue();
-  const stopRelay = startRelay();
+export function startEmailWorker() {
   const worker = new Worker('email-sends', processEmail, {
     connection: redis, concurrency: config.WORKER_CONCURRENCY,
   });
   worker.on('error', () => console.error('Worker error; check infrastructure.'));
   worker.on('failed', (job, error) => console.error('Email job failed:', job?.id, error.message));
+  return worker;
+}
+
+async function main() {
+  await prisma.$connect();
+  await redis.ping();
+  await recoverQueue();
+  const stopRelay = startRelay();
+  const worker = startEmailWorker();
   let closing = false;
   const close = async () => {
     if (closing) return; closing = true;
@@ -97,4 +102,7 @@ async function main() {
   process.on('SIGINT', () => void close());
   console.log('Email worker ready; concurrency=' + config.WORKER_CONCURRENCY);
 }
-if (process.env.NODE_ENV !== 'test') main().catch(() => { console.error('Worker startup failed. Check configuration and services.'); process.exitCode = 1; });
+const isDirectExecution = process.argv[1] && (process.argv[1].endsWith('worker.ts') || process.argv[1].endsWith('worker.js'));
+if (process.env.NODE_ENV !== 'test' && isDirectExecution) {
+  main().catch(() => { console.error('Worker startup failed. Check configuration and services.'); process.exitCode = 1; });
+}
