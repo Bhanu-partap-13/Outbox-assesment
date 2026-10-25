@@ -22,6 +22,7 @@ FROM node:22-alpine AS runner
 
 WORKDIR /app
 ENV NODE_ENV=production
+ENV PORT=7860
 
 COPY package.json package-lock.json ./
 COPY backend/package.json ./backend/
@@ -37,6 +38,9 @@ COPY --from=builder /app/frontend/dist ./frontend/dist
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
-EXPOSE 4000
+RUN chown -R node:node /app
+USER node
 
-CMD ["sh", "-c", "npx prisma migrate deploy --schema=./backend/prisma/schema.prisma && node backend/dist/server.js"]
+EXPOSE 7860
+
+CMD ["node", "backend/dist/server.js"]
